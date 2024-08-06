@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Input, Modal, Alert, StatefulButton,
+  Form, Alert, StatefulButton, ModalDialog, ActionRow,
 } from '@openedx/paragon';
 import { Error } from '@openedx/paragon/icons';
 
@@ -111,48 +111,57 @@ class EmailSettingsModal extends Component {
     const { open, courseRunId } = this.props;
 
     return (
-      <Modal
+      <ModalDialog
         title="Email settings"
-        body={(
-          <>
-            {error && (
-              <Alert variant="danger" icon={Error}>
-                An error occurred while saving your email settings. Please try again.
-              </Alert>
-            )}
-            <div className="form-check">
-              <Input
-                type="checkbox"
-                id={`email-settings-${courseRunId}`}
-                checked={hasEmailsEnabled}
-                disabled={isSubmitting}
-                onChange={this.handleEmailSettingsChange}
-              />
-              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-              <label className="form-check-label ml-2 font-weight-normal" htmlFor={`email-settings-${courseRunId}`}>
-                Receive course emails such as reminders, schedule updates, and
-                other critical announcements.
-              </label>
-            </div>
-          </>
-        )}
+        isOpen={open}
         onClose={this.handleOnClose}
-        buttons={[
-          <StatefulButton
-            labels={{
-              default: 'Save',
-              pending: 'Saving',
-              complete: 'Saved',
-            }}
-            disabledStates={this.getDisabledStates()}
-            className="save-email-settings-btn btn-primary btn-brand-primary"
-            state={this.getButtonState()}
-            onClick={this.handleSaveButtonClick}
-            key="save-email-settings-btn"
-          />,
-        ]}
-        open={open}
-      />
+        hasCloseButton
+        isFullscreenOnMobile
+      >
+        <ModalDialog.Header>
+          <ModalDialog.Title>
+            Email settings
+          </ModalDialog.Title>
+        </ModalDialog.Header>
+        <ModalDialog.Body>
+          {error && (
+            <Alert variant="danger" icon={Error}>
+              An error occurred while saving your email settings. Please try again.
+            </Alert>
+          )}
+          <Form.Group>
+            <Form.Label htmlFor={`email-settings-${courseRunId}`}>
+              Receive course emails such as reminders, schedule updates, and
+              other critical announcements.
+            </Form.Label>
+            <Form.Check
+              id={`email-settings-${courseRunId}`}
+              checked={hasEmailsEnabled}
+              disabled={isSubmitting}
+              onChange={this.handleEmailSettingsChange}
+            />
+          </Form.Group>
+        </ModalDialog.Body>
+        <ModalDialog.Footer>
+          <ActionRow>
+            <ModalDialog.CloseButton variant="tertiary">
+              Cancel
+            </ModalDialog.CloseButton>
+            <StatefulButton
+              labels={{
+                default: 'Save',
+                pending: 'Saving',
+                complete: 'Saved',
+              }}
+              disabledStates={this.getDisabledStates()}
+              className="save-email-settings-btn btn-primary btn-brand-primary"
+              state={this.getButtonState()}
+              onClick={this.handleSaveButtonClick}
+              key="save-email-settings-btn"
+            />
+          </ActionRow>
+        </ModalDialog.Footer>
+      </ModalDialog>
     );
   }
 }

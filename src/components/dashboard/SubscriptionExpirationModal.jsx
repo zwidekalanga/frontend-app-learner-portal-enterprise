@@ -1,5 +1,7 @@
 import React, { useContext } from 'react';
-import { MailtoLink, Modal } from '@openedx/paragon';
+import {
+  ActionRow, AlertModal, Button, MailtoLink, useToggle,
+} from '@openedx/paragon';
 import { AppContext } from '@edx/frontend-platform/react';
 
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -23,6 +25,7 @@ const SubscriptionExpirationModal = () => {
   } = useContext(AppContext);
 
   const intl = useIntl();
+  const [isOpen, , close] = useToggle(true);
   const { data: enterpriseCustomer } = useEnterpriseCustomer();
   const { data: subscriptions } = useSubscriptions();
   const { subscriptionPlan, subscriptionLicense } = subscriptions;
@@ -92,44 +95,6 @@ const SubscriptionExpirationModal = () => {
     );
   };
 
-  const renderBody = () => (
-    <>
-      <p>
-        Your organization&#39;s access to your current subscription is expiring in
-        {timeUntilExpiration()} After it expires you will only have audit access to your courses.
-      </p>
-      <p>
-        If you are currently taking courses, plan your learning accordingly. You should also take
-        this time to {renderCertificateText()}.
-      </p>
-      <p>
-        If you think this is an error or need help, {renderContactText()}.
-      </p>
-      <i>
-        Access expires on {i18nFormatTimestamp({ intl, timestamp: expirationDate })}.
-      </i>
-    </>
-  );
-
-  const renderExpiredBody = () => (
-    <>
-      <p>
-        Your organization&#39;s access to your subscription has expired. You will only have audit
-        access to the courses you were enrolled in with your subscription (courses from vouchers
-        will still be fully accessible).
-      </p>
-      <p>
-        You can also {renderCertificateText()}.
-      </p>
-      <p>
-        If you think this is an error or need help, {renderContactText()}.
-      </p>
-      <i>
-        Access expired on {dayjs(expirationDate).format('MMM D, YYYY')}.
-      </i>
-    </>
-  );
-
   const seenExpiredSubscriptionModal = !!global.localStorage.getItem(
     EXPIRED_SUBSCRIPTION_MODAL_LOCALSTORAGE_KEY(subscriptionLicense),
   );
@@ -139,18 +104,35 @@ const SubscriptionExpirationModal = () => {
       return null;
     }
     return (
-      <Modal
-        dialogClassName={`${MODAL_DIALOG_CLASS_NAME} expired`}
-        renderHeaderCloseButton={false}
+      <AlertModal
         title={renderTitle()}
-        body={renderExpiredBody()}
-        closeText="OK"
+        className={`${MODAL_DIALOG_CLASS_NAME} expired`}
+        isOpen={isOpen}
         onClose={() => {
           global.localStorage.setItem(EXPIRED_SUBSCRIPTION_MODAL_LOCALSTORAGE_KEY(subscriptionLicense), 'true');
         }}
-        open
         data-testid="expired-modal"
-      />
+        footerNode={(
+          <ActionRow>
+            <Button variant="tertiary" onClick={close}>OK</Button>
+          </ActionRow>
+        )}
+      >
+        <p>
+          Your organization&#39;s access to your subscription has expired. You will only have audit
+          access to the courses you were enrolled in with your subscription (courses from vouchers
+          will still be fully accessible).
+        </p>
+        <p>
+          You can also {renderCertificateText()}.
+        </p>
+        <p>
+          If you think this is an error or need help, {renderContactText()}.
+        </p>
+        <i>
+          Access expired on {dayjs(expirationDate).format('MMM D, YYYY')}.
+        </i>
+      </AlertModal>
     );
   }
 
@@ -179,19 +161,36 @@ const SubscriptionExpirationModal = () => {
   }
 
   return (
-    <Modal
-      dialogClassName={MODAL_DIALOG_CLASS_NAME}
-      renderHeaderCloseButton={false}
+    <AlertModal
       title={renderTitle()}
-      body={renderBody()}
-      closeText="OK"
+      className={MODAL_DIALOG_CLASS_NAME}
       // Mark that the user has seen this range's expiration modal when they close it
+      isOpen={isOpen}
       onClose={() => {
         global.localStorage.setItem(expirationModalLocalStorageName, 'true');
       }}
-      open
       data-testid="expiration-modal"
-    />
+      footerNode={(
+        <ActionRow>
+          <Button variant="tertiary" onClick={close}>OK</Button>
+        </ActionRow>
+      )}
+    >
+      <p>
+        Your organization&#39;s access to your current subscription is expiring in
+        {timeUntilExpiration()} After it expires you will only have audit access to your courses.
+      </p>
+      <p>
+        If you are currently taking courses, plan your learning accordingly. You should also take
+        this time to {renderCertificateText()}.
+      </p>
+      <p>
+        If you think this is an error or need help, {renderContactText()}.
+      </p>
+      <i>
+        Access expires on {i18nFormatTimestamp({ intl, timestamp: expirationDate })}.
+      </i>
+    </AlertModal>
   );
 };
 
